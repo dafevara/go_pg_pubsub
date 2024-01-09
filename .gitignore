@@ -1,0 +1,41 @@
+# Binaries and Objects
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.o
+*.a
+*.out
+
+# Build Directories
+bin/
+obj/
+dist/
+
+# Vendor Directory
+vendor/
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+
+# Testing and Coverage
+*.test
+*.cover
+cover.out
+*.coverprofile
+
+# Miscellaneous
+.env
+.env.local
+debug/
+*.log
+
+# OS Generated Files
+.DS_Store
+Thumbs.db
+.directory
