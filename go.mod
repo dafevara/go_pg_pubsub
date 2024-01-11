@@ -3,6 +3,8 @@ module go_pg_pubsub
 go 1.19
 
 require (
+	github.com/bxcodec/faker/v3 v3.8.1 // indirect
+	github.com/bxcodec/faker/v4 v4.0.0-beta.3 // indirect
 	github.com/go-faker/faker/v4 v4.2.0 // indirect
 	github.com/go-pg/pg/v10 v10.12.0 // indirect
 	github.com/go-pg/zerochecker v0.2.0 // indirect
