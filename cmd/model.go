@@ -25,7 +25,7 @@ type Payment struct {
 	Product   *Product `pg:"rel:has-one"`
 	UserId    int32
 	User      *User `pg:"rel:has-one"`
-	Amount    int32
+	Amount    int64
 	Status    string
 }
 
@@ -33,8 +33,8 @@ type PaymentTask struct {
 	Id         int32
 	PaymentId  int32
 	Payment    *Payment `pg:"rel:has-one"`
-	TriesLeft  int32
+	TriesLeft  int32    `pg:"default:5"`
 	Error      string
-	Processing bool
+	Processing bool `pg:"default:false"`
 	UpdatedAt  time.Time
 }

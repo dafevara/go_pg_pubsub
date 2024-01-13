@@ -25,7 +25,36 @@ var initCmd = &cobra.Command{
 		if err != nil {
 			panic(err)
 		}
+
+		err = AddTriggers(db)
+		if err != nil {
+			panic(err)
+		}
 	},
+}
+
+func AddTriggers(db *pg.DB) error {
+	_, err := db.Exec(`
+        CREATE OR REPLACE FUNCTION insert_into_payment_task()
+        RETURNS TRIGGER AS $$
+        BEGIN
+        INSERT INTO payment_tasks (payment_id) VALUES (NEW.id);
+        RETURN NEW;
+        END;
+        $$ LANGUAGE plpgsql;
+
+        drop trigger if exists process_payment_trigger on payments cascade;
+        CREATE TRIGGER process_payment_trigger
+        AFTER INSERT
+        ON payments
+        FOR EACH ROW
+        EXECUTE FUNCTION insert_into_payment_task();
+    `)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func CreateSchema(db *pg.DB) error {

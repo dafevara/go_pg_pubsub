@@ -6,8 +6,9 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/bxcodec/faker/v4"
+	"github.com/go-faker/faker/v4"
 	"github.com/go-pg/pg/v10"
+	"github.com/schollz/progressbar/v3"
 	"github.com/spf13/cobra"
 )
 
@@ -25,6 +26,7 @@ type FakeProduct struct {
 }
 
 func Populate(db *pg.DB) error {
+	bar := progressbar.Default(100)
 	for i := 0; i < 100; i++ {
 		fUser := FakeUser{}
 		err := faker.FakeData(&fUser)
@@ -44,7 +46,7 @@ func Populate(db *pg.DB) error {
 		}
 
 		fProduct := FakeProduct{}
-		err := faker.FakeData(&fProduct)
+		err = faker.FakeData(&fProduct)
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -60,6 +62,7 @@ func Populate(db *pg.DB) error {
 		if err != nil {
 			panic(err)
 		}
+		bar.Add(1)
 	}
 	return nil
 }
