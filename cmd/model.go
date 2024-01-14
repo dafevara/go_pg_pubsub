@@ -36,5 +36,6 @@ type PaymentTask struct {
 	TriesLeft  int32    `pg:"default:5"`
 	Error      string
 	Processing bool `pg:"default:false"`
+	NextTryAt  time.Time
 	UpdatedAt  time.Time
 }
