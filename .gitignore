@@ -12,6 +12,8 @@
 bin/
 obj/
 dist/
+data/
+postgres-data/
 
 # Vendor Directory
 vendor/

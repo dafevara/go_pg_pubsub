@@ -8,3 +8,5 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=go_pg_pubsub_dev
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
