@@ -5,6 +5,7 @@ package cmd
 
 import (
 	"fmt"
+    "go_pg_pubsub/pkg/types"
 
 	"github.com/go-faker/faker/v4"
 	"github.com/go-pg/pg/v10"
@@ -27,7 +28,7 @@ func Publish(db *pg.DB) error {
 			fmt.Println(err)
 		}
 
-		payment := &Payment{
+		payment := &types.Payment{
 			ProductId: fPayment.ProductId,
 			UserId:    fPayment.UserId,
 			Amount:    fPayment.Amount,

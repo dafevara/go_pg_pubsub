@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+    "go_pg_pubsub/pkg/types"
 
 	"github.com/go-pg/pg/v10"
 	"github.com/go-pg/pg/v10/orm"
@@ -59,10 +60,10 @@ func AddTriggers(db *pg.DB) error {
 
 func CreateSchema(db *pg.DB) error {
 	models := []interface{}{
-		(*User)(nil),
-		(*Product)(nil),
-		(*Payment)(nil),
-		(*PaymentTask)(nil),
+		(*types.User)(nil),
+		(*types.Product)(nil),
+		(*types.Payment)(nil),
+		(*types.PaymentTask)(nil),
 	}
 
 	for _, model := range models {

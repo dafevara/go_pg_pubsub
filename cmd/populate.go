@@ -10,6 +10,7 @@ import (
 	"github.com/go-pg/pg/v10"
 	"github.com/schollz/progressbar/v3"
 	"github.com/spf13/cobra"
+    "go_pg_pubsub/pkg/types"
 )
 
 type FakeUser struct {
@@ -34,7 +35,7 @@ func Populate(db *pg.DB) error {
 			fmt.Println(err)
 		}
 
-		user := &User{
+		user := &types.User{
 			Name:    fUser.Name,
 			Email:   fUser.Email,
 			Balance: fUser.Balance,
@@ -51,7 +52,7 @@ func Populate(db *pg.DB) error {
 			fmt.Println(err)
 		}
 
-		product := &Product{
+		product := &types.Product{
 			Name:     fProduct.Name,
 			Price:    fProduct.Price,
 			Stock:    fProduct.Stock,

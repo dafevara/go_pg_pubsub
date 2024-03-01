@@ -6,12 +6,13 @@ package cmd
 import (
 	"fmt"
 	"time"
+    "go_pg_pubsub/pkg/types"
 
 	"github.com/go-pg/pg/v10"
 	"github.com/spf13/cobra"
 )
 
-func Next() (PaymentTask, error) {
+func Next() (types.PaymentTask, error) {
 	db := pg.Connect(&pg.Options{
 		User:     "postgres",
 		Password: "postgres",
@@ -43,7 +44,7 @@ func Next() (PaymentTask, error) {
         )
         RETURNING id, payment_id, tries_left, error, processing, updated_at
     `
-	var paymentTask PaymentTask
+	var paymentTask types.PaymentTask
 	_, err := db.QueryOne(&paymentTask, query)
 	if err != nil {
 		return paymentTask, err
@@ -52,7 +53,7 @@ func Next() (PaymentTask, error) {
 	return paymentTask, nil
 }
 
-func Success(paymentTask *PaymentTask, payment Payment, product Product, newBalance int64) error {
+func Success(paymentTask *types.PaymentTask, payment types.Payment, product types.Product, newBalance int64) error {
 	db := pg.Connect(&pg.Options{
 		User:     "postgres",
 		Password: "postgres",
@@ -98,7 +99,7 @@ func Success(paymentTask *PaymentTask, payment Payment, product Product, newBala
 	return nil
 }
 
-func FailedByStock(paymentTask *PaymentTask, user User, payment Payment) error {
+func FailedByStock(paymentTask *types.PaymentTask, user types.User, payment types.Payment) error {
 	db := pg.Connect(&pg.Options{
 		User:     "postgres",
 		Password: "postgres",
@@ -126,7 +127,7 @@ func FailedByStock(paymentTask *PaymentTask, user User, payment Payment) error {
 	return nil
 }
 
-func FailedByBalance(paymentTask *PaymentTask, user User, payment Payment, product Product) error {
+func FailedByBalance(paymentTask *types.PaymentTask, user types.User, payment types.Payment, product types.Product) error {
 	balance := user.Balance
 	price := product.Price
 	msg := fmt.Sprintf("Unable to pay because price: %d is greater than balance %d", price, balance)
@@ -157,7 +158,7 @@ func FailedByBalance(paymentTask *PaymentTask, user User, payment Payment, produ
 	return nil
 }
 
-func Perform(paymentTask *PaymentTask) error {
+func Perform(paymentTask *types.PaymentTask) error {
 	db := pg.Connect(&pg.Options{
 		User:     "postgres",
 		Password: "postgres",
@@ -166,7 +167,7 @@ func Perform(paymentTask *PaymentTask) error {
 	defer db.Close()
 	// Assuming db.GetClient returns a *sql.DB and handles error internally
 	// Query Payment
-	var payment Payment
+	var payment types.Payment
 	q := "select * from payments where id = ?"
 	_, err := db.QueryOne(&payment, q, paymentTask.PaymentId)
 	if err != nil {
@@ -175,7 +176,7 @@ func Perform(paymentTask *PaymentTask) error {
 	fmt.Printf("Payment: %v\n", payment.Id)
 
 	// Query User
-	var user User
+	var user types.User
 	q = "select * from users where id = ?"
 	_, err = db.QueryOne(&user, q, payment.UserId)
 	if err != nil {
@@ -184,7 +185,7 @@ func Perform(paymentTask *PaymentTask) error {
 	fmt.Printf("for User: %v\n", user.Id)
 
 	// Query Product
-	var product Product
+	var product types.Product
 	q = "select * from products where id = ?"
 	_, err = db.QueryOne(&product, q, payment.ProductId)
 	if err != nil {
