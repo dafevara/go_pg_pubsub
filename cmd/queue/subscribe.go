@@ -1,18 +1,18 @@
 /*
 Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 */
-package cmd
+package queue
 
 import (
 	"fmt"
+	"go_pg_pubsub/pkg/models"
 	"time"
-    "go_pg_pubsub/pkg/types"
 
 	"github.com/go-pg/pg/v10"
 	"github.com/spf13/cobra"
 )
 
-func Next() (types.PaymentTask, error) {
+func Next() (models.PaymentTask, error) {
 	db := pg.Connect(&pg.Options{
 		User:     "postgres",
 		Password: "postgres",
@@ -44,7 +44,7 @@ func Next() (types.PaymentTask, error) {
         )
         RETURNING id, payment_id, tries_left, error, processing, updated_at
     `
-	var paymentTask types.PaymentTask
+	var paymentTask models.PaymentTask
 	_, err := db.QueryOne(&paymentTask, query)
 	if err != nil {
 		return paymentTask, err
@@ -53,7 +53,7 @@ func Next() (types.PaymentTask, error) {
 	return paymentTask, nil
 }
 
-func Success(paymentTask *types.PaymentTask, payment types.Payment, product types.Product, newBalance int64) error {
+func Success(paymentTask *models.PaymentTask, payment models.Payment, product models.Product, newBalance int64) error {
 	db := pg.Connect(&pg.Options{
 		User:     "postgres",
 		Password: "postgres",
@@ -90,7 +90,7 @@ func Success(paymentTask *types.PaymentTask, payment types.Payment, product type
 
 	// Remove message from queue
 	query := "delete from payment_tasks where id = ?"
-	_, err = db.Exec(query, paymentTask.Id)
+	_, err = db.Exec(query, paymentTask.Uuid)
 	if err != nil {
 		fmt.Println("Error deleting payment task: ", err)
 		return err
@@ -99,7 +99,7 @@ func Success(paymentTask *types.PaymentTask, payment types.Payment, product type
 	return nil
 }
 
-func FailedByStock(paymentTask *types.PaymentTask, user types.User, payment types.Payment) error {
+func FailedByStock(paymentTask *models.PaymentTask, user models.User, payment models.Payment) error {
 	db := pg.Connect(&pg.Options{
 		User:     "postgres",
 		Password: "postgres",
@@ -111,7 +111,7 @@ func FailedByStock(paymentTask *types.PaymentTask, user types.User, payment type
 	fmt.Printf("Failed: %v\n", msg)
 
 	q := "update payment_tasks set error = ?, tries_left = 0, processing = false where id = ?"
-	_, err := db.Exec(q, msg, paymentTask.Id)
+	_, err := db.Exec(q, msg, paymentTask.Uuid)
 	if err != nil {
 		fmt.Printf("Error updating payment task: %v", err)
 		return err
@@ -127,7 +127,7 @@ func FailedByStock(paymentTask *types.PaymentTask, user types.User, payment type
 	return nil
 }
 
-func FailedByBalance(paymentTask *types.PaymentTask, user types.User, payment types.Payment, product types.Product) error {
+func FailedByBalance(paymentTask *models.PaymentTask, user models.User, payment models.Payment, product models.Product) error {
 	balance := user.Balance
 	price := product.Price
 	msg := fmt.Sprintf("Unable to pay because price: %d is greater than balance %d", price, balance)
@@ -142,7 +142,7 @@ func FailedByBalance(paymentTask *types.PaymentTask, user types.User, payment ty
 	defer db.Close()
 
 	q := "update payment_tasks set error = ? where id = ?"
-	_, err := db.Exec(q, msg, paymentTask.Id)
+	_, err := db.Exec(q, msg, paymentTask.Uuid)
 	if err != nil {
 		fmt.Printf("Error updating payment task: %v", err)
 		return err
@@ -158,7 +158,7 @@ func FailedByBalance(paymentTask *types.PaymentTask, user types.User, payment ty
 	return nil
 }
 
-func Perform(paymentTask *types.PaymentTask) error {
+func Perform(paymentTask *models.PaymentTask) error {
 	db := pg.Connect(&pg.Options{
 		User:     "postgres",
 		Password: "postgres",
@@ -167,7 +167,7 @@ func Perform(paymentTask *types.PaymentTask) error {
 	defer db.Close()
 	// Assuming db.GetClient returns a *sql.DB and handles error internally
 	// Query Payment
-	var payment types.Payment
+	var payment models.Payment
 	q := "select * from payments where id = ?"
 	_, err := db.QueryOne(&payment, q, paymentTask.PaymentId)
 	if err != nil {
@@ -176,7 +176,7 @@ func Perform(paymentTask *types.PaymentTask) error {
 	fmt.Printf("Payment: %v\n", payment.Id)
 
 	// Query User
-	var user types.User
+	var user models.User
 	q = "select * from users where id = ?"
 	_, err = db.QueryOne(&user, q, payment.UserId)
 	if err != nil {
@@ -185,7 +185,7 @@ func Perform(paymentTask *types.PaymentTask) error {
 	fmt.Printf("for User: %v\n", user.Id)
 
 	// Query Product
-	var product types.Product
+	var product models.Product
 	q = "select * from products where id = ?"
 	_, err = db.QueryOne(&product, q, payment.ProductId)
 	if err != nil {
@@ -249,8 +249,4 @@ var subscribeCmd = &cobra.Command{
 			panic(err)
 		}
 	},
-}
-
-func init() {
-	rootCmd.AddCommand(subscribeCmd)
 }

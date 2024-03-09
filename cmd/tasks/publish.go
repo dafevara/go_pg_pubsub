@@ -1,16 +1,15 @@
 /*
 Copyright © 2024 NAME HERE <EMAIL ADDRESS>
 */
-package cmd
+package tasks
 
 import (
 	"fmt"
-    "go_pg_pubsub/pkg/types"
+	"go_pg_pubsub/pkg/models"
 
 	"github.com/go-faker/faker/v4"
 	"github.com/go-pg/pg/v10"
 	"github.com/schollz/progressbar/v3"
-	"github.com/spf13/cobra"
 )
 
 type FakePayment struct {
@@ -28,7 +27,7 @@ func Publish(db *pg.DB) error {
 			fmt.Println(err)
 		}
 
-		payment := &types.Payment{
+		payment := &models.Payment{
 			ProductId: fPayment.ProductId,
 			UserId:    fPayment.UserId,
 			Amount:    fPayment.Amount,
@@ -41,28 +40,4 @@ func Publish(db *pg.DB) error {
 		bar.Add(1)
 	}
 	return nil
-}
-
-// publishCmd represents the publish command
-var publishCmd = &cobra.Command{
-	Use:   "publish",
-	Short: "A brief description of your command",
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("running publish")
-		db := pg.Connect(&pg.Options{
-			User:     "postgres",
-			Password: "postgres",
-			Database: "go_pg_pubsub_dev",
-		})
-		defer db.Close()
-
-		err := Publish(db)
-		if err != nil {
-			panic(err)
-		}
-	},
-}
-
-func init() {
-	rootCmd.AddCommand(publishCmd)
 }

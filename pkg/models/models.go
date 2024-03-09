@@ -1,7 +1,7 @@
-package types 
+package models
 
 import (
-	"time"
+	"go_pg_pubsub/pkg/interfaces"
 )
 
 type User struct {
@@ -30,12 +30,12 @@ type Payment struct {
 }
 
 type PaymentTask struct {
-	Id         int32
-	PaymentId  int32
-	Payment    *Payment `pg:"rel:has-one"`
-	TriesLeft  int32    `pg:"default:5"`
-	Error      string
-	Processing bool `pg:"default:false"`
-	NextTryAt  time.Time
-	UpdatedAt  time.Time
+	interfaces.BaseTaskable
+	PaymentId int32
+	Payment   *Payment `pg:"rel:has-one"`
+}
+
+type PgmqQueue struct {
+	Id   int32
+	Name string
 }
